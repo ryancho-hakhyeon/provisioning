@@ -1,0 +1,74 @@
+---
+# tasks file for database
+- name: Update and Upgrade apt
+  become: true
+  apt:
+          upgrade: yes
+          update_cache: yes
+          cache_valid_time: 86400
+- name: Make sure that MySQL is installed
+  become: true
+  package:
+          name: mysql-server
+          state: present
+- name: Make sure that ansible python3 mysql dependency is installed
+  become: true
+  apt:
+          name: python3-mysqldb
+          state: latest
+- name: Check if state file exists
+  stat:
+          path: /home/vagrant/mysql_provisioned.state
+  register: mysql_state_file
+- name: Install python3-pip
+  become: true
+  package:
+          name: python3-pip
+          state: present
+- name: Install pymysql
+  become: true
+  pip:
+          name: pymysql
+          state: present
+- name: Run pymysql create DATABASE
+  become: true
+  mysql_db:
+          name: "{{ backend_db_name }}"
+          state: present
+          check_implicit_admin: yes
+          login_unix_socket: /var/run/mysqld/mysqld.sock
+- name: Run pymysql create USER
+  become: true
+  mysql_user:
+          name: "{{ backend_db_user }}"
+          password: "{{ backend_db_password }}"
+          priv: '{{ backend_db_name }}.*:ALL,GRANT'
+          host: '%'
+          state: present
+          check_implicit_admin: yes
+          login_unix_socket: /var/run/mysqld/mysqld.sock
+  when: not mysql_state_file.stat.exists
+- name: Create state file if required
+  file:
+          path: /home/vagrant/mysql_provisioned.state
+          state: touch
+  when: not mysql_state_file.stat.exists
+- name: Change a bind-address at the mysqld.cnf
+  become: true
+  replace:
+          path: /etc/mysql/mysql.conf.d/mysqld.cnf
+          regexp: '127.0.0.1'
+          replace: '0.0.0.0'
+  register: mysqld_config
+- name: Make sure MySQL is enabled and running
+  become: true
+  systemd:
+          name: mysql
+          enabled: yes
+          state: started
+- name: Restart the MySQL service
+  become: true
+  systemd:
+          name: mysql
+          state: restarted
+  when: mysqld_config.changed

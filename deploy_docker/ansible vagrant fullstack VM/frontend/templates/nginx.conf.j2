@@ -1,0 +1,19 @@
+
+server {
+        listen 80 default_server;
+        listen [::]:80 default_server;
+
+	root /home/vagrant{{ http_static_dir }}/build;
+
+        index index.html index.htm index.nginx-debian.html;
+
+        server_name _;
+
+        location / {
+                try_files $uri $uri/ /index.html;
+        }
+
+        location /api {
+                proxy_pass {{ http_backend_url }};
+        }
+}

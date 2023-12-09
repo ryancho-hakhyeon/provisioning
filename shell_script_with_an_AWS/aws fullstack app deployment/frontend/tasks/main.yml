@@ -1,0 +1,43 @@
+---
+# tasks file for frontend
+- name: Make sure that Nginx, git are installed
+  become: true
+  package: 
+          name: nginx
+          state: present
+- name: Make sure the git repository is cloned and up to date
+  git:
+          repo: https://github.com/bezkoder/react-crud-web-api.git
+          force: yes
+          dest: /home/ubuntu{{ http_static_dir }}
+- name: Make sure that http-common.js is modified
+  replace:
+          path: /home/ubuntu{{ http_static_dir }}/src/http-common.js
+          regexp: 'baseURL: "http://localhost:8080/api"'
+          replace: 'baseURL: "{{ http_api_location }}"'
+- name: Install packages for the frontend app
+  community.general.npm:
+          path: /home/ubuntu{{ http_static_dir }}
+- name: Build npm
+  become: true
+  command: npm run-script build
+  args:
+          chdir: /home/ubuntu{{ http_static_dir }}
+- name: Make sure default Nginx config is updated
+  become: true
+  template:
+          src: nginx.conf.j2
+          dest: /etc/nginx/sites-available/default
+  register: nginx_config
+- name: Make sure Nginx is enabled and running
+  become: true
+  systemd:
+          name: nginx
+          enabled: yes
+          state: started
+- name: Restart Nginx if the config was changed
+  become: true
+  systemd:
+          name: nginx
+          state: restarted
+  when: nginx_config.changed

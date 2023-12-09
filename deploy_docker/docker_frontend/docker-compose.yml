@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  pyapp:
+    build:
+      context: api
+      dockerfile: Dockerfile
+    container_name: back
+    ports:
+      - 5000:5000
+    environment:
+      - USER_NAME=Ryan Cho Hakhyeon
+      - USER_WEBSITE=https://ryanchoportfolio.netlify.app/
+  nginx:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    container_name: front
+    ports:
+      - 12080:80
+    environment:
+      - API_PROXY_PASS=http://pyapp:5000
+

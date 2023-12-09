@@ -1,0 +1,22 @@
+---
+- hosts: backend
+  tasks:
+          - name: Include the nodejs role
+            include_role:
+                    name: nodejs 
+          - name: Include the backend role
+            include_role:
+                    name: backend
+- hosts: frontend
+  tasks:
+          - name: Include the nodejs role
+            include_role:
+                    name: nodejs
+          - name: Include the frontend role
+            include_role:
+                    name: frontend
+- hosts: database
+  tasks:
+          - name: Include the database role
+            include_role:
+                    name: database

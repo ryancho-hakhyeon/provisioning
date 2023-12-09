@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+  api:
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    container_name: api_back
+    restart: always
+    environment:
+      - localURL=mongodb://mongo:27017/todos
+    expose:
+      - '8080'
+    depends_on:
+      - db
+  front:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    volumes:
+      - ./templates:/etc/nginx/templates
+    environment:
+#      - API_PROXY_PASS=http://api:8080
+      - API_PROXY_PASS=http://localhost:8080
+    restart: always
+    ports:
+      - 12088:80
+    depends_on:
+      - api
+      - db
+  db:
+    image: mongo
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=todos
+      - DB_USER=backend
+      - DB_PASSWORD=secrets
+    volumes:
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    expose:
+      - '27017'

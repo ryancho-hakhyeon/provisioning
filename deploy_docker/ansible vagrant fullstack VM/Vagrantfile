@@ -1,0 +1,52 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/focal64"
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+  config.vm.boot_timeout = 1200
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.gui = true
+    vb.linked_clone = true
+    vb.cpus = 4
+    vb.memory = 1536
+    vb.customize [ "modifyvm", :id, "--uartmode1", "disconnected" ]
+  end
+
+  config.vm.define "backend" do |backend|
+    backend.vm.provider "virtualbox" do |vb|
+        vb.name = "BACKEND_test"
+    end
+    backend.vm.network "private_network", ip: "192.168.150.10"
+    backend.vm.network "forwarded_port", guest: 80, host: 3080
+    backend.vm.hostname = "backend.bcit.local"
+    backend.vm.provision "ansible" do |ansible|
+        ansible.playbook = "installation.yaml"
+    end
+  end
+
+  config.vm.define "frontend" do |frontend|
+    frontend.vm.provider "virtualbox" do |vb|
+        vb.name = "FRONTEND_test"
+    end
+    frontend.vm.network "private_network", ip: "192.168.150.11"
+    frontend.vm.network "forwarded_port", guest: 80, host: 8080
+    frontend.vm.hostname = "frontend.bcit.local"
+    frontend.vm.provision "ansible" do |ansible|
+       ansible.playbook = "installation.yaml"
+    end
+  end
+
+  config.vm.define "database" do |database|
+    database.vm.provider "virtualbox" do |vb|
+        vb.name = "DATABASE_test"
+    end
+    database.vm.network "private_network", ip: "192.168.150.12"
+    database.vm.network "forwarded_port", guest: 3306, host: 12006
+    database.vm.hostname = "db.bcit.local"
+    database.vm.provision "ansible" do |ansible|
+  	ansible.playbook = "installation.yaml"
+    end
+  end
+end

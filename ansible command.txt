@@ -1,0 +1,7 @@
+
+[create a role]
+ansible-galaxy role init [Name]
+
+
+[run playbook(.yml)] 
+ansible-playbook [File Name].yml
