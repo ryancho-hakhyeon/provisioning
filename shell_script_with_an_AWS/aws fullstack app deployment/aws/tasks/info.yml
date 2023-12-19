@@ -40,10 +40,10 @@
 - name: Setup aws_output 1
   set_fact:
     aws_output:
-     - "Found VPC: {{ aws_vpc_info.vpcs[0].tags.Name }} {{ aws_vpc_info.vpcs[0].cidr_block }} (ID {{ aws_vpc_info.vpcs[0].vpc_id }})"
-     - "Found subnet: {{ aws_subnet_info.subnets[0].tags.Name }} {{ aws_subnet_info.subnets[0].cidr_block }} (ID {{aws_subnet_info.subnets[0].subnet_id }})"
-     - "Found Internet gateway: {{ aws_igw_info.internet_gateways[0].internet_gateway_id }} (attached to VPC {{ aws_igw_info.internet_gateways[0].attachments[0].vpc_id }})"
-     - "Found routing table: {{ aws_route_info.route_tables[0].tags.Name }} (attached to subnet {{ aws_route_info.route_tables[0].associations[0].subnet_id }})"
+      - "Found VPC: {{ aws_vpc_info.vpcs[0].tags.Name }} {{ aws_vpc_info.vpcs[0].cidr_block }} (ID {{ aws_vpc_info.vpcs[0].vpc_id }})"
+      - "Found subnet: {{ aws_subnet_info.subnets[0].tags.Name }} {{ aws_subnet_info.subnets[0].cidr_block }} (ID {{aws_subnet_info.subnets[0].subnet_id }})"
+      - "Found Internet gateway: {{ aws_igw_info.internet_gateways[0].internet_gateway_id }} (attached to VPC {{ aws_igw_info.internet_gateways[0].attachments[0].vpc_id }})"
+      - "Found routing table: {{ aws_route_info.route_tables[0].tags.Name }} (attached to subnet {{ aws_route_info.route_tables[0].associations[0].subnet_id }})"
 - name: Setup routing tables aws_output
   set_fact:
     line: "  Route: {{ item.destination_cidr_block }} -> {{ item.gateway_id }}"

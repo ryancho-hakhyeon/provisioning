@@ -6,16 +6,17 @@
 
 ## Tech
 * Vagrant 
-* ansible
-* docker
+* Ansible
+* Docker
 * AWS
 * Bash Script
 * WSL2 - Ubuntu
 
-## Set up Environments
-* WSL Install - https://ubuntu.com/tutorials/install-ubuntu-on-wsl2-on-windows-10#1-overview
+## Install Environments
+* WSL Install - https://learn.microsoft.com/en-us/windows/wsl/install
+* Ubuntu on WSL Install - https://ubuntu.com/tutorials/install-ubuntu-on-wsl2-on-windows-10#1-overview
 * Docker Desktop Install - https://docs.docker.com/desktop/install/windows-install/
-* Vagrant Install - 
+* Vagrant Install - https://developer.hashicorp.com/vagrant/downloads
 * VirtualBox Install (Version 6) - https://www.virtualbox.org/wiki/Downloads
 * AWS Set up - users, access token, 
 

@@ -3,41 +3,73 @@
 - name: Make sure that Nginx, git are installed
   become: true
   package: 
-          name: nginx
-          state: present
+    name: nginx
+    state: present
+- name: Make sure the frontend user exists
+  become: true
+  user:
+    name: "{{ frontend_user }}"
+- name: Create a directory if it doesn't exist
+  become: true
+  ansible.builtin.file:
+    path: /home{{ http_static_dir }}
+    state: directory
+    owner: "{{ frontend_user }}"
+    mode: '0755'
+- name: Make sure the acl, git is installend
+  become: true
+  package:
+    name: acl
+    state: present
 - name: Make sure the git repository is cloned and up to date
+  become: true
+  become_user: "{{ frontend_user }}"
   git:
-          repo: https://github.com/bezkoder/react-crud-web-api.git
-          force: yes
-          dest: /home/ubuntu{{ http_static_dir }}
-- name: Make sure that http-common.js is modified
-  replace:
-          path: /home/ubuntu{{ http_static_dir }}/src/http-common.js
-          regexp: 'baseURL: "http://localhost:8080/api"'
-          replace: 'baseURL: "{{ http_api_location }}"'
+    repo: https://github.com/bezkoder/react-crud-web-api.git
+    force: yes
+    dest: /home{{ http_static_dir }}/frontendsrc
 - name: Install packages for the frontend app
+  become: true
+  become_user: "{{ frontend_user }}"
   community.general.npm:
-          path: /home/ubuntu{{ http_static_dir }}
+    path: /home{{ http_static_dir }}/frontendsrc
+  register: npm_install
+- name: Make sure that http-common.js is modified
+  become: true
+  replace:
+    path: /home{{ http_static_dir }}/frontendsrc/src/http-common.js
+    regexp: 'baseURL: "http://localhost:8080/api"'
+    replace: 'baseURL: "{{ http_api_location }}"'
+  register: replace_config
+- name: Check for the build folder
+  stat:
+    path: /home{{ http_static_dir }}/frontendsrc/build/index.html
+  register: build_dir
 - name: Build npm
   become: true
+  become_user: "{{ frontend_user }}"
   command: npm run-script build
   args:
-          chdir: /home/ubuntu{{ http_static_dir }}
-- name: Make sure default Nginx config is updated
-  become: true
-  template:
-          src: nginx.conf.j2
-          dest: /etc/nginx/sites-available/default
-  register: nginx_config
+    chdir: /home{{ http_static_dir }}/frontendsrc
+  when: (npm_install.changed or replace_config.changed) and not build_dir.stat.exists
 - name: Make sure Nginx is enabled and running
   become: true
   systemd:
-          name: nginx
-          enabled: yes
-          state: started
+    name: nginx
+    enabled: yes
+    state: started
+- name: Make sure default Nginx config is updated
+  become: true
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/sites-available/default
+  register: nginx_config
 - name: Restart Nginx if the config was changed
   become: true
   systemd:
-          name: nginx
-          state: restarted
+    name: nginx
+    state: restarted
   when: nginx_config.changed
+- name: Print info
+  debug:
+    msg: "You can access the app at http://{{ ansible_host }}/."

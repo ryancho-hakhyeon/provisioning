@@ -1,76 +1,81 @@
 ---
 - name: Create a VPC net
   ec2_vpc_net:
-          cidr_block: 10.100.0.0/16
-          name: "{{ AWS_PREFIX }}_VPC"
-          state: present
-          tags:
-                  Name: "{{ AWS_PREFIX }}_VPC"
+    cidr_block: 10.100.0.0/16
+    name: "{{ AWS_PREFIX }}_VPC"
+    state: present
+    tags:
+      Name: "{{ AWS_PREFIX }}_VPC"
   register: vpc_data
 - name: Create a VPC subnet
   ec2_vpc_subnet:
-          az: us-west-2a
-          cidr: 10.100.10.0/24
-          vpc_id: "{{ vpc_data.vpc.id }}"
-          tags: 
-                  Name: "{{ AWS_PREFIX }}_SUBNET"
+    az: us-west-2a
+    cidr: 10.100.10.0/24
+    vpc_id: "{{ vpc_data.vpc.id }}"
+    tags: 
+      Name: "{{ AWS_PREFIX }}_SUBNET"
   register: subnet_data
 - name: Create a VPC IGW
   ec2_vpc_igw:
-          vpc_id: "{{ vpc_data.vpc.id }}"
-          tags:
-                  Name: "{{ AWS_PREFIX }}_IGW"
+    vpc_id: "{{ vpc_data.vpc.id }}"
+    tags:
+      Name: "{{ AWS_PREFIX }}_IGW"
   register: igw_data
 - name: Create a Routing table
   ec2_vpc_route_table:
-          subnets:
-                  - "{{ subnet_data.subnet.id  }}"
-          routes:
-                  - dest: 0.0.0.0/0
-                    gateway_id: "{{ igw_data.gateway_id }}"
-          vpc_id: "{{ vpc_data.vpc.id }}"
-          tags:
-                  Name: "{{ AWS_PREFIX }}_RTBL"
+    subnets:
+      - "{{ subnet_data.subnet.id  }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ igw_data.gateway_id }}"
+    vpc_id: "{{ vpc_data.vpc.id }}"
+    tags:
+      Name: "{{ AWS_PREFIX }}_RTBL"
   register: route_table_data
-- name: Create a sec group
+- name: Create a Security group
   ec2_group:
-          name: "{{ AWS_PREFIX }}_SECGRP"
-          description: security group for tutorials
-          vpc_id: "{{ vpc_data.vpc.id }}"
-          region: us-west-2
-          rules:
-                  - proto: tcp
-                    from_port: 22
-                    to_port: 22
-                    cidr_ip: 0.0.0.0/0
-                  - proto: tcp
-                    from_port: 80
-                    to_port: 80
-                    cidr_ip: 0.0.0.0/0
-                  - proto: tcp
-                    from_port: 3306
-                    to_port: 3306
-                    cidr_ip: 0.0.0.0/0
-                  - proto: tcp
-                    from_port: 8080
-                    to_port: 8080
-                    cidr_ip: 0.0.0.0/0
-          tags:
-                   Name: "{{ AWS_PREFIX }}_SECGRP"
+    name: "{{ AWS_PREFIX }}_SECGRP"
+    description: security group for practice
+    vpc_id: "{{ vpc_data.vpc.id }}"
+    region: us-west-2
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 3306
+        to_port: 3306
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 8080
+        to_port: 8080
+        cidr_ip: 0.0.0.0/0
+    tags:
+      Name: "{{ AWS_PREFIX }}_SECGRP"
   register: sec_data
-- name: Create instance
+- name: Create Instance
   community.aws.ec2_instance:
-          image_id: ami-036d46416a34a611c
-          instance_type: t2.micro
-          key_name: aws_private_key
-          network:
-                  assign_public_ip: true
-                  subnet_id: "{{ subnet_data.subnet.id }}"
-          security_group: "{{ AWS_PREFIX }}_SECGRP"
-          name: "{{ AWS_PREFIX }}_EC2"
-          vpc_subnet_id: "{{ subnet_data.subnet.id }}"
-          wait: yes
-          tags:
-                  Name: "{{ AWS_PREFIX }}_EC2"
+    # previous
+    # image_id: ami-036d46416a34a611c
+    # New try - option 1 Ubuntu Server 20.04 LTS
+    # image_id: ami-08e2c1a8d17c2fe17
+    # New try - option 2 Ubuntu Server 22.04 LTS
+    image_id: ami-0efcece6bed30fd98
+    instance_type: t2.micro
+    key_name: aws_private_key
+    network:
+      assign_public_ip: true
+      subnet_id: "{{ subnet_data.subnet.id }}"
+    security_group: "{{ AWS_PREFIX }}_SECGRP"
+    name: "{{ AWS_PREFIX }}_EC2"
+    vpc_subnet_id: "{{ subnet_data.subnet.id }}"
+    wait: yes
+    tags:
+      Name: "{{ AWS_PREFIX }}_EC2"
 - name: Refresh the inventory
   meta: refresh_inventory

@@ -1,35 +1,38 @@
 ---
 - hosts: localhost
   tasks:
-          - name: Create the AWS infrastructure
-            import_role:
-                    name: aws
-                    tasks_from: create.yml
-            tags:
-                    - create
-          - name: Provisioning AWS infrastructure
-            import_role:
-                    name: aws
-                    tasks_from: info.yml
-            tags:
-                    - info
-                    - never
-          - name: Clean AWS infrastructure
-            import_role:
-                    name: aws
-                    tasks_from: clean.yml
-            tags:
-                    - clean
-                    - never
+    - name: Create the AWS infrastructure
+      import_role:
+        name: aws
+        tasks_from: create.yml
+      tags:
+        - create
+    - name: Information the AWS infrastructure
+      import_role:
+        name: aws
+        tasks_from: info.yml
+      tags:
+        - info
+        - never
+    - name: Clean AWS infrastructure
+      import_role:
+        name: aws
+        tasks_from: clean.yml
+      tags:
+        - clean
+        - never
 - hosts: aws_ec2
   tasks:
-         - name: Provision the application
-           include_role:
-                   name: "{{ item }}"
-           tags:
-                   - provision
-           with_items:
-                   - nodejs
-                   - database
-                   - backend
-                   - frontend
+    - name: Provision the application
+      include_role:
+        name: "{{ item }}"
+        apply:
+            tags:
+                - provision
+      tags:
+        - always
+      with_items:
+        - nodejs
+        - frontend
+        - database
+        - backend

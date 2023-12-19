@@ -1,5 +1,6 @@
 ---
 # defaults file for frontend
+frontend_user: "frontend"
 http_static_dir: "/frontend"
 http_api_location : "/api"
-http_backend_url: "http://localhost:8080"
+http_backend_url: "http://{{ ansible_host }}:8080"

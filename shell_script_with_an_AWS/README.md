@@ -59,6 +59,7 @@
 ## CLI AWS Setting
 * Create Ansible Role for AWS
 * Create tasks - create.yml, clean.yml, info.yml, main.yml
+** path: /aws/tasks/
 
 ---
 ### Create Ansible Role for AWS
@@ -96,7 +97,9 @@
 * Then, create all tasks file named create.yml, clean.yml, info.yml, main.yml into your AWS role tasks folder
 * Lastly, check all tasks are properly worked.
 ```
-    
+    ansible-playbook playbook.yml --tags create
+    ansible-playbook playbook.yml --tags info
+    ansible-playbook playbook.yml --tags clean
 ```
 
 ---

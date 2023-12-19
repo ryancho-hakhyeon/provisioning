@@ -1,7 +1,7 @@
 ---
 # defaults file for backend
 backend_user: backend
-backend_db_host: localhost
+backend_db_host: "{{ ansible_host }}"
 backend_db_name: tutorials
 backend_db_user: backend
-backend_db_password: acit4640
+backend_db_password: passwords
